@@ -1,2 +1,3 @@
 # VoskhodSurveyBot
-Voskhod Survey Bot from Alex and Stas
+Voskhod Survey Bot from AlexandrPravdin and CTACEK
+
