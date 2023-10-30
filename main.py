@@ -1,17 +1,19 @@
-#https://habr.com/ru/articles/732136/
+# https://habr.com/ru/articles/732136/
 
-import asyncio # Для ассинхронного запуска бота
-import logging # Для настройки логгирования, которое поможет в отладке
+import asyncio  # Для ассинхронного запуска бота
+import logging  # Для настройки логгирования, которое поможет в отладке
 
 from aiogram import Bot, Dispatcher
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
 import config
+
 from handlers import router
 
 
 async def main():
+    print(config.BOT_TOKEN)
     bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
