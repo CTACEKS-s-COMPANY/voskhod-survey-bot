@@ -1,4 +1,5 @@
 # https://habr.com/ru/articles/732136/
+# https://habr.com/ru/articles/599199/
 
 import asyncio  # Для ассинхронного запуска бота
 import logging  # Для настройки логгирования, которое поможет в отладке
