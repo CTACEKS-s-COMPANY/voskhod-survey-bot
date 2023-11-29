@@ -1,5 +1,6 @@
 # https://habr.com/ru/articles/732136/
 # https://habr.com/ru/articles/599199/
+# https://mastergroosha.github.io/aiogram-3-guide/fsm/
 
 import asyncio  # Для ассинхронного запуска бота
 import logging  # Для настройки логгирования, которое поможет в отладке
@@ -11,7 +12,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import config
 
 from handlers import router
-
 
 async def main():
     print(config.BOT_TOKEN)
