@@ -1,6 +1,7 @@
 # https://habr.com/ru/articles/732136/
 # https://habr.com/ru/articles/599199/
 # https://mastergroosha.github.io/aiogram-3-guide/fsm/
+# https://github.com/rdfsx/schedule_bot
 
 import os
 import asyncio  # Для ассинхронного запуска бота
