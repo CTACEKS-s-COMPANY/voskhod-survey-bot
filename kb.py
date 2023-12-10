@@ -1,6 +1,6 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 
-import text
+from res import text
 
 # Menu buttons and keyboard buttons of USER
 menu_user_buttons = [

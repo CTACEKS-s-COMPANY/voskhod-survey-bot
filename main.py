@@ -2,20 +2,21 @@
 # https://habr.com/ru/articles/599199/
 # https://mastergroosha.github.io/aiogram-3-guide/fsm/
 
+import os
 import asyncio  # Для ассинхронного запуска бота
 import logging  # Для настройки логгирования, которое поможет в отладке
-
 from aiogram import Bot, Dispatcher
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-
-import config
-
+from dotenv import load_dotenv
 from handlers import router
 
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 async def main():
-    print(config.BOT_TOKEN)
-    bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
+    load_dotenv()
+
+    print(BOT_TOKEN)
+    bot = Bot(token=BOT_TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
     await bot.delete_webhook(drop_pending_updates=True)

@@ -1,22 +1,20 @@
+import kb
 from aiogram import F, Router
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.types import Message
-
-# Inside classes
-import config
-import kb
-import states
-import text
+from res import states, text
 
 router = Router()
+
+ADMIN_ID = 541852628  # Узнать можно тут @getmyid_bot
 
 
 # Bot /Start message
 @router.message(Command("start"))
 async def start_handler(msg: Message, state: FSMContext):
-    if msg.from_user.id == config.ADMIN_ID:
+    if msg.from_user.id == ADMIN_ID:
         await msg.answer(text.greet_admin.format(name=msg.from_user.full_name), reply_markup=kb.menu_admin)
         await state.set_state(states.AdminStates.menu_state)
     else:
