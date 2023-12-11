@@ -3,6 +3,8 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
+from utils.data.db import get_users, create_user
+
 user_router = Router()
 from user_bot.res import user_text as text
 from user_bot.res import user_kb
@@ -16,6 +18,7 @@ from user_bot.user_states import UserStates
 @user_router.message(Command("start"))
 async def start_handler(msg: Message, state: FSMContext):
     # Создать клиента в бд
+    create_user(msg.from_user.id)
     await msg.answer(text.greet_user.format(name=msg.from_user.full_name), reply_markup=user_kb.subscribe_kb)
     await state.set_state(UserStates.subscribe_state)
 
@@ -24,6 +27,10 @@ async def start_handler(msg: Message, state: FSMContext):
 @user_router.message(Command("id"))
 async def id_handler(msg: Message, state: FSMContext):
     await msg.answer("Your ID is\n" + str(msg.from_user.id))
+
+    data = get_users()
+
+    await msg.answer(f"Data: {data}")
 
 
 # Subscribe state
