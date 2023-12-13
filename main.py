@@ -12,22 +12,27 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 
 import config
-from user_bot.user_handlers import user_router
-from admin_bot.admin_handlers import admin_router
+from admin_bot_package.admin_handlers import admin_router
+from user_bot_package.user_handlers import user_router
+
+admin_bot = Bot(config.ADMIN_BOT_ID, parse_mode=ParseMode.HTML)
+user_bot = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
+
 
 # funktion with bots polling
-async def bot_poll(token,router: Router):
-    bot = Bot(token=token, parse_mode=ParseMode.HTML)
+async def bot_poll(bot: Bot, router: Router):
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
-    await bot.delete_webhook(drop_pending_updates=True)
+    # await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+
 
 async def main():
     load_dotenv()
-    await asyncio.create_task(bot_poll(config.USER_BOT_TOKEN, user_router))
-    # await asyncio.create_task(bot_poll(config.ADMIN_BOT_ID,admin_router))
-
+    await asyncio.gather(
+        bot_poll(user_bot, user_router),
+        bot_poll(admin_bot, admin_router)
+    )
 
 
 if __name__ == "__main__":
