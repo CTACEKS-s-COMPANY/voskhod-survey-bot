@@ -1,9 +1,10 @@
 from aiogram import F, Router
+from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from utils.data.db import get_user, create_user, set_subscribe_to_newsletter, does_user_subscribe_to_newsletter
+from utils.data.db import create_user, set_subscribe_to_newsletter, does_user_subscribe_to_newsletter
 
 user_router = Router()
 from user_bot_package.res import user_text as text
@@ -24,19 +25,18 @@ async def start_handler(msg: Message, state: FSMContext):
 # Bot /Start message
 @user_router.message(Command("id"))
 async def id_handler(msg: Message, state: FSMContext):
-    await msg.answer(f"Ваш ID - {str(msg.from_user.id)} \n"
-                     f"Перешлите это сообщение пользователю, который собирается дать вам права Админа")
-    data = get_user(msg.from_user.id)
-    await msg.answer(f"ID: {data[0][0]}\n You are subscribed: {data[0][1]}\n You are admin: {data[0][2]} \n "
-                     f"Date: {data[0][3]}\n")
+    await msg.answer(text.id_answer.format(id=msg.from_user.id), parse_mode=ParseMode.HTML)
+    # data = get_user(msg.from_user.id)
+    # await msg.answer(f"ID: {data[0][0]}\n You are subscribed: {data[0][1]}\n You are admin: {data[0][2]} \n "
+    #                  f"Date: {data[0][3]}\n"
 
 
 # Subscribe state
-@user_router.message(F.text == text.subscribe_to_newsletter)
+@user_router.message(F.text == text.subscribe_to_newsletter_trigger)
 async def subscribe_to_newsletter(msg: Message, state: FSMContext):
     # Залезть в базу и поставить галочку на рассылку
     if does_user_subscribe_to_newsletter(msg.from_user.id) is True:
-        await msg.answer("Вы уже подписались на рассылку", reply_markup=None)
+        await msg.answer(text.subscribe_to_newsletter_answer, reply_markup=None)
     else:
         await msg.answer(str(set_subscribe_to_newsletter(msg.from_user.id)))
 
@@ -46,6 +46,6 @@ async def greet_user(msg: Message, state: FSMContext):
     # Проверка на рассылку
 
     if does_user_subscribe_to_newsletter(msg.from_user.id) is True:
-        await msg.answer("Вы уже подписались на рассылку")
+        await msg.answer(text=text.you_already_subscribe_to_newsletter)
     else:
-        await msg.answer("Вы еще не подписались на рассылку")
+        await msg.answer(text=text.you_already_not_subscribe_to_newsletter)

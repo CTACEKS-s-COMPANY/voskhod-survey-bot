@@ -6,15 +6,13 @@ from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from pydantic import ValidationError
-
+import re
 from admin_bot_package.admin_states import PostStates, BaseAdminStates
 from admin_bot_package.res import admin_kb
 from utils.data import db
 from utils.data.db import set_user_to_admin, new_post, send_post
-
+from admin_bot_package.res import admin_text as text
 admin_router = Router()
-
-ADMIN_ID = 541852628  # Узнать можно тут @getmyid_bot
 
 
 # ToDO Сделать всос текста в HTML, чтобы сохранять форматирования текста в Телеге
@@ -25,70 +23,65 @@ ADMIN_ID = 541852628  # Узнать можно тут @getmyid_bot
 async def hello_admin_command(msg: Message, state: FSMContext):
     is_admin = db.does_user_admin(msg.from_user.id)
     if is_admin:
-        await msg.answer(text="Здравствуйте, Админ", reply_markup=admin_kb.menu_kb)
+        await msg.answer(text.greet_admin.format(name = msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
         await state.set_state(BaseAdminStates.in_admin_state)
     else:
-        await msg.answer(text="Извините, вы не админ\n"
-                              "Попросите другого пользователя с правами Админа нажать кнопку \"Добавить админа\"",
-                         reply_markup=admin_kb.you_are_not_admin_kb)
+        await msg.answer(text=text.you_are_not_admin_message,
+                         reply_markup=admin_kb.you_are_not_admin_kb, parse_mode=ParseMode.HTML)
         await state.set_state(BaseAdminStates.you_not_admin)
 
 
 @admin_router.message(StateFilter(BaseAdminStates.you_not_admin))
 async def you_not_admin(msg: Message, state: FSMContext):
-    await msg.answer("Хорошо, давайте еще разок попробуем...")
+    await msg.answer(text.lets_try_again_message,parse_mode=ParseMode.HTML)
     is_admin = db.does_user_admin(msg.from_user.id)
     if is_admin:
-        await msg.answer(text="Здравствуйте, Админ", reply_markup=admin_kb.menu_kb)
+        await msg.answer(text=text.greet_admin.format(name = msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
         await state.set_state(None)
     else:
-        await msg.answer(text="Не сработало")
+        await msg.answer(text=text.dont_work)
 
 
 # New Admin State
-@admin_router.message(StateFilter(BaseAdminStates.in_admin_state), F.text == "Добавить админа")
+@admin_router.message(StateFilter(BaseAdminStates.in_admin_state), F.text == text.insert_admin_button)
 async def make_user_admin(msg: Message, state: FSMContext):
-    await msg.answer("Попросите пользователя зарегистрироваться в \n"
-                     "@voskhod_survey_bot и ввести комманду /id\n"
-                     "Перешлите сообщение сюда")
+    await msg.answer(text.insert_admin_message)
     await state.set_state(BaseAdminStates.new_admin)
 
 
 @admin_router.message(StateFilter(BaseAdminStates.new_admin))
 async def new_admin(msg: Message, state: FSMContext):
-    id = msg.text.split(" ")[3]
-    await msg.answer(set_user_to_admin(id))
-    await state.set_state(None)
+    # regex id finder
+    user_id_from_message = re.findall("\d+", msg.text.lower())[0]
+    # id = msg.text.split(" ")[3]
+    await msg.answer(set_user_to_admin(user_id_from_message))
+    await state.set_state(BaseAdminStates.in_admin_state)
 
 
 # Post states
-@admin_router.message(StateFilter(BaseAdminStates.in_admin_state), F.text == "Новый пост")
+@admin_router.message(StateFilter(BaseAdminStates.in_admin_state), F.text == text.insert_post_button)
 async def post_admin_command(msg: Message, state: FSMContext):
-    await state.set_state(PostStates.title_state)
-    await msg.answer(text="Введите тему вашего Поста")
-
+    await msg.answer(text=text.insert_post_message)
+    await state.set_state(PostStates.text_state)
 
 # ToDo how to make back button reply_markup=admin_kb.back_menu_kb
 # Input title
-@admin_router.message(StateFilter(PostStates.title_state))
-async def title_input(msg: Message, state: FSMContext):
-    await msg.answer(text=f"{msg.html_text}\n\nВведите текст поста", parse_mode=ParseMode.HTML)
-    await state.set_state(PostStates.text_state)
+# @admin_router.message(StateFilter(PostStates.title_state))
+# async def title_input(msg: Message, state: FSMContext):
+#     await msg.answer(text=f"{msg.html_text}\n\nВведите текст поста", parse_mode=ParseMode.HTML)
+#     await state.set_state(PostStates.text_state)
 
 # ToDo make title input
 # Input text
 @admin_router.message(StateFilter(PostStates.text_state))
 async def text_input(msg: Message, state: FSMContext):
-    await msg.answer(f"{new_post(msg.from_user.id, str(msg.html_text))}\n", parse_mode=ParseMode.HTML)
+    await msg.answer(f"{new_post(msg.from_user.id, msg.html_text)}\n", parse_mode=ParseMode.HTML)
     try:
         await msg.answer(await send_post(msg.from_user.id))
-        # operator = Bot(config.USER_BOT_TOKEN,parse_mode=ParseMode.HTML)
-        # await operator.send_message(756263716,"Стас, хоть я и бот, но все-равно вижу, что ты дрочишь")
-        # await operator.close()
     except ValidationError as error:
         print(error)
     await msg.answer("Ваше сообщение отправлено", reply_markup=admin_kb.menu_kb, parse_mode=ParseMode.HTML)
-    await state.set_state(None)
+    await state.set_state(BaseAdminStates.in_admin_state)
     # await commit_changes()
 
 
