@@ -4,7 +4,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from app.utils.data.db import create_user, set_subscribe_to_newsletter, does_user_subscribe_to_newsletter
+from app.utils.data.database import db
 
 user_router = Router()
 from app.user_bot_package.res import user_text as text, user_kb
@@ -16,7 +16,7 @@ from app.user_bot_package.res import user_text as text, user_kb
 # Null message
 @user_router.message(Command("start"))
 async def start_handler(msg: Message, state: FSMContext):
-    create_user(msg.from_user.id)  # Создание клиента в бд
+    db.create_user(msg.from_user.id)  # Создание клиента в бд
     await msg.answer(text.greet_user.format(name=msg.from_user.full_name), reply_markup=user_kb.subscribe_kb)
 
 
@@ -30,17 +30,17 @@ async def id_handler(msg: Message, state: FSMContext):
 @user_router.message(F.text == text.subscribe_to_newsletter_trigger)
 async def subscribe_to_newsletter(msg: Message, state: FSMContext):
     # Залезть в базу и поставить галочку на рассылку
-    if does_user_subscribe_to_newsletter(msg.from_user.id) is True:
+    if db.does_user_subscribe_to_newsletter(msg.from_user.id) is True:
         await msg.answer(text.subscribe_to_newsletter_answer, reply_markup=None)
     else:
-        await msg.answer(str(set_subscribe_to_newsletter(msg.from_user.id)))
+        await msg.answer(str(db.set_subscribe_to_newsletter(msg.from_user.id)))
 
 
 @user_router.message(StateFilter(None))
 async def greet_user(msg: Message, state: FSMContext):
     # Проверка на рассылку
 
-    if does_user_subscribe_to_newsletter(msg.from_user.id) is True:
+    if db.does_user_subscribe_to_newsletter(msg.from_user.id) is True:
         await msg.answer(text=text.you_already_subscribe_to_newsletter)
     else:
         await msg.answer(text=text.you_already_not_subscribe_to_newsletter)

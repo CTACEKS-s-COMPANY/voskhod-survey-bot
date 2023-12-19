@@ -9,8 +9,7 @@ from pydantic import ValidationError
 import re
 from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
 from app.admin_bot_package.res import admin_kb, admin_text as text
-from app.utils.data import db
-from app.utils.data.db import set_user_to_admin, new_post, send_post
+from app.utils.data.database import  db
 
 admin_router = Router()
 
@@ -54,7 +53,7 @@ async def new_admin(msg: Message, state: FSMContext):
     # regex id finder
     user_id_from_message = re.findall("\d+", msg.text.lower())[0]
     # id = msg.text.split(" ")[3]
-    await msg.answer(set_user_to_admin(user_id_from_message))
+    await msg.answer(db.set_user_to_admin(user_id_from_message))
     await state.set_state(BaseAdminStates.in_admin_state)
 
 
@@ -75,9 +74,9 @@ async def post_admin_command(msg: Message, state: FSMContext):
 # Input text
 @admin_router.message(StateFilter(PostStates.text_state))
 async def text_input(msg: Message, state: FSMContext):
-    await msg.answer(f"{new_post(msg.from_user.id, msg.html_text)}\n", parse_mode=ParseMode.HTML)
+    await msg.answer(f"{db.new_post(msg.from_user.id, msg.html_text)}\n", parse_mode=ParseMode.HTML)
     try:
-        await msg.answer(await send_post(msg.from_user.id))
+        await msg.answer(await db.send_post(msg.from_user.id))
     except ValidationError as error:
         print(error)
     await msg.answer("Ваше сообщение отправлено", reply_markup=admin_kb.menu_kb, parse_mode=ParseMode.HTML)
