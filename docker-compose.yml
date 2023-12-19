@@ -2,7 +2,7 @@ version: "1"
 
 services:
   db:
-    container_name: db
+    container_name: database
     image: postgres:alpine
     restart: on-failure
     environment:
@@ -12,10 +12,12 @@ services:
     ports:
       - 5432:5432
     volumes:
-    - ./postgresql:/var/lib/postgresql/data
+      - ./postgresql:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
 
   bot:
-    container_name: voshod_bot
+    container_name: bot
     build:
       context: .
     restart: always
