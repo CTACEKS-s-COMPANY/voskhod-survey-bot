@@ -11,9 +11,9 @@ from aiogram.enums.parse_mode import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 
-import config
-from admin_bot_package.admin_handlers import admin_router
-from user_bot_package.user_handlers import user_router
+from app import config
+from app.admin_bot_package.admin_handlers import admin_router
+from app.user_bot_package.user_handlers import user_router
 
 admin_bot = Bot(config.ADMIN_BOT_ID, parse_mode=ParseMode.HTML)
 user_bot = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)

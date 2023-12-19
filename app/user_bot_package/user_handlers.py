@@ -4,11 +4,10 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from utils.data.db import create_user, set_subscribe_to_newsletter, does_user_subscribe_to_newsletter
+from app.utils.data.db import create_user, set_subscribe_to_newsletter, does_user_subscribe_to_newsletter
 
 user_router = Router()
-from user_bot_package.res import user_text as text
-from user_bot_package.res import user_kb
+from app.user_bot_package.res import user_text as text, user_kb
 
 
 # User functions 👶🏻

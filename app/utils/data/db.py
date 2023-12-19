@@ -5,8 +5,8 @@ from aiogram import Bot
 from aiogram.enums import ParseMode
 from pydantic import ValidationError
 
-import config
-from utils.data import db_text as text
+from app import config
+from app.utils.data import db_text as text
 
 db_connection = psycopg2.connect(config.POSTGRES_URI, sslmode="disable")
 db_object = db_connection.cursor()
