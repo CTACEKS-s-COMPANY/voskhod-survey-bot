@@ -7,11 +7,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from pydantic import ValidationError
 import re
-from admin_bot_package.admin_states import PostStates, BaseAdminStates
-from admin_bot_package.res import admin_kb
-from utils.data import db
-from utils.data.db import set_user_to_admin, new_post, send_post
-from admin_bot_package.res import admin_text as text
+from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
+from app.admin_bot_package.res import admin_kb, admin_text as text
+from app.utils.data import db
+from app.utils.data.db import set_user_to_admin, new_post, send_post
+
 admin_router = Router()
 
 
@@ -113,7 +113,7 @@ async def data_input(msg: Message, state: FSMContext):
 
 @admin_router.message(StateFilter(BaseAdminStates.in_admin_state))
 async def nothing_in_admin(msg: Message):
-    await msg.answer(text="Выберите команду",reply_markup=admin_kb.menu_kb)
+    await msg.answer(text="Выберите команду", reply_markup=admin_kb.menu_kb)
 
 @admin_router.message()
 async def nothing_before(msg: Message, state: FSMContext):

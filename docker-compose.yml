@@ -2,7 +2,7 @@ version: "1"
 
 services:
   db:
-    container_name: database
+    container_name: db
     image: postgres:alpine
     restart: on-failure
     environment:
@@ -14,17 +14,17 @@ services:
     volumes:
     - ./postgresql:/var/lib/postgresql/data
 
-#  bot:
-#    container_name: bot
-#    build:
-#      context: .
-#    restart: always
-#    env_file:
-#      - .env
-#    volumes:
-#      - .:/src
-#    environment:
-#      POSTGRES_HOST: db
-#      TZ: "Europe/Moscow"
-#    depends_on:
-#      - db
+  bot:
+    container_name: voshod_bot
+    build:
+      context: .
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/src
+    environment:
+      POSTGRES_HOST: db
+      TZ: "Europe/Moscow"
+    depends_on:
+      - db
