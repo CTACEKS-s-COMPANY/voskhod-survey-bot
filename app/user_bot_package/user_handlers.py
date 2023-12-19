@@ -18,16 +18,12 @@ from app.user_bot_package.res import user_text as text, user_kb
 async def start_handler(msg: Message, state: FSMContext):
     create_user(msg.from_user.id)  # Создание клиента в бд
     await msg.answer(text.greet_user.format(name=msg.from_user.full_name), reply_markup=user_kb.subscribe_kb)
-    # await state.set_state(UserStates.subscribe_state)
 
 
 # Bot /Start message
 @user_router.message(Command("id"))
 async def id_handler(msg: Message, state: FSMContext):
     await msg.answer(text.id_answer.format(id=msg.from_user.id), parse_mode=ParseMode.HTML)
-    # data = get_user(msg.from_user.id)
-    # await msg.answer(f"ID: {data[0][0]}\n You are subscribed: {data[0][1]}\n You are admin: {data[0][2]} \n "
-    #                  f"Date: {data[0][3]}\n"
 
 
 # Subscribe state
