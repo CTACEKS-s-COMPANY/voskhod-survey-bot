@@ -1,3 +1,5 @@
+import re
+
 import psycopg2
 from aiogram import Bot
 from aiogram.enums import ParseMode
@@ -33,7 +35,7 @@ def get_user(user_id: int):
         return result
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return text.something_goes_wrong(error = error)
+        return text.something_goes_wrong(error=error)
 
 
 def set_subscribe_to_newsletter(user_id: int):
@@ -43,7 +45,7 @@ def set_subscribe_to_newsletter(user_id: int):
         return text.you_are_subscribed_message
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return text.something_goes_wrong(error = error)
+        return text.something_goes_wrong(error=error)
 
 
 def does_user_subscribe_to_newsletter(user_id: int):
@@ -67,7 +69,7 @@ def set_user_to_admin(user_id: str):
         return text.new_one_admin_message
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return text.something_goes_wrong(error = error)
+        return text.something_goes_wrong(error=error)
 
 
 # Making messages
@@ -79,20 +81,24 @@ def new_post(user_id: int, post_text: str):
         return post_text
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return text.something_goes_wrong(error = error)
+        return text.something_goes_wrong(error=error)
 
 
 # TODO - шедуле
 async def send_post(user_id: int):
     # Получение всех подписчиков
-    subscribers = db_object.execute(f"SELECT id from users where is_subscriber=true")
+    db_object.execute(f"SELECT id from users where is_subscriber=true")
+    subscribers = db_object.fetchall()
     print(subscribers)
     try:
         if config.ADMIN_BOT_ID is not None:
             operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
-            await operator.send_message(user_id, "Проверка")
+            for subscriber in subscribers:
+                subscriber_id = re.findall("\d+", str(subscriber))[0]
+                print(subscriber_id)
+                await operator.send_message(subscriber_id, "Проверка")
             await operator.close()
         else:
             raise Exception(text.admin_bot_token_exception)
     except ValidationError as error:
-        text.something_goes_wrong(error = error)
+        text.something_goes_wrong(error=error)
