@@ -12,4 +12,5 @@ class BaseAdminStates(StatesGroup):
     new_admin = State()
     in_admin_state = State()
     you_not_admin = State()
+    stats_state = State()
 

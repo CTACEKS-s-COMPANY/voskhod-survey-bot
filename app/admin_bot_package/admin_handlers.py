@@ -1,14 +1,17 @@
 import asyncio
+import random
 import re
 from datetime import datetime
 
+import numpy as np
 import psycopg2
 from aiogram import Router, F, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, InputFile, FSInputFile, BufferedInputFile, URLInputFile
 from loguru import logger
+from matplotlib import pyplot as plt
 
 from app import config
 from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
@@ -33,6 +36,58 @@ async def hello_admin_command(msg: Message, state: FSMContext):
             await msg.answer(text=text.you_are_not_admin_message,
                              reply_markup=admin_kb.you_are_not_admin_kb, parse_mode=ParseMode.HTML)
             await state.set_state(BaseAdminStates.you_not_admin)
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(error)
+        await msg.answer(text.something_goes_wrong)
+        await state.set_state(BaseAdminStates.in_admin_state)
+
+# Post states
+@admin_router.message(StateFilter(BaseAdminStates.in_admin_state), F.text == text.stats_button)
+async def stats_command(msg: Message, state: FSMContext):
+    await msg.answer(text=text.stats_message)
+    # TODO @ctacek Доделать графики
+    try:
+
+        post_id = random.randrange(0, 10000)
+
+        fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+
+        recipe = ["100 Да",
+                  "200 Нет",
+                  ]
+
+        data = [float(x.split()[0]) for x in recipe]
+        ingredients = [x.split()[-1] for x in recipe]
+
+        def func(pct, allvals):
+            absolute = int(np.round(pct / 100. * np.sum(allvals)))
+            return f"{pct:.1f}%\n({absolute:d} g)"
+
+        wedges, texts, autotexts = ax.pie(data, autopct=lambda pct: func(pct, data),
+                                          textprops=dict(color="w"))
+
+        ax.legend(wedges, ingredients,
+                  title="Ответы",
+                  loc="center left",
+                  bbox_to_anchor=(1, 0, 0.5, 1))
+
+        plt.setp(autotexts, size=8, weight="bold")
+
+        ax.set_title(f"Станистика по посту: {post_id}")
+
+        logger.info(f'Создание фоточки')
+
+        # fig.savefig(f'/resources/photo/prest.jpg')
+
+        operator = Bot(config.ADMIN_BOT_ID, parse_mode=ParseMode.HTML)
+
+        await operator.send_photo(msg.chat.id, URLInputFile(
+            "https://static.tildacdn.com/tild6239-3062-4135-a135-383130316136/photo.png",
+            filename="python-graph.png"
+        ))
+
+        await operator.close()
+
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(error)
         await msg.answer(text.something_goes_wrong)

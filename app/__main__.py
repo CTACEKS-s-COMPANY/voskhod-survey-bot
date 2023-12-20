@@ -21,10 +21,10 @@ async def on_startup() -> None:
     load_dotenv()
     database.start_up()
 
+user_bot = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
+admin_bot = Bot(config.ADMIN_BOT_ID, parse_mode=ParseMode.HTML)
 
 async def main():
-    user_bot = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
-    admin_bot = Bot(config.ADMIN_BOT_ID, parse_mode=ParseMode.HTML)
 
     dp_user = Dispatcher(storage=MemoryStorage())
     dp_user.include_router(user_router)
