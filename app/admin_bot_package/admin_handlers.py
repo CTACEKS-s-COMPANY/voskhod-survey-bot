@@ -5,11 +5,12 @@ from aiogram.enums import ParseMode
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from loguru import logger
 from pydantic import ValidationError
 import re
 from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
 from app.admin_bot_package.res import admin_kb, admin_text as text
-from app.utils.data.database import  db
+from app.utils.data.database import db
 
 admin_router = Router()
 
@@ -22,7 +23,7 @@ admin_router = Router()
 async def hello_admin_command(msg: Message, state: FSMContext):
     is_admin = db.does_user_admin(msg.from_user.id)
     if is_admin:
-        await msg.answer(text.greet_admin.format(name = msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
+        await msg.answer(text.greet_admin.format(name=msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
         await state.set_state(BaseAdminStates.in_admin_state)
     else:
         await msg.answer(text=text.you_are_not_admin_message,
@@ -32,10 +33,10 @@ async def hello_admin_command(msg: Message, state: FSMContext):
 
 @admin_router.message(StateFilter(BaseAdminStates.you_not_admin))
 async def you_not_admin(msg: Message, state: FSMContext):
-    await msg.answer(text.lets_try_again_message,parse_mode=ParseMode.HTML)
+    await msg.answer(text.lets_try_again_message, parse_mode=ParseMode.HTML)
     is_admin = db.does_user_admin(msg.from_user.id)
     if is_admin:
-        await msg.answer(text=text.greet_admin.format(name = msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
+        await msg.answer(text=text.greet_admin.format(name=msg.from_user.full_name), reply_markup=admin_kb.menu_kb)
         await state.set_state(None)
     else:
         await msg.answer(text=text.dont_work)
@@ -63,6 +64,7 @@ async def post_admin_command(msg: Message, state: FSMContext):
     await msg.answer(text=text.insert_post_message)
     await state.set_state(PostStates.text_state)
 
+
 # ToDo how to make back button reply_markup=admin_kb.back_menu_kb
 # Input title
 # @admin_router.message(StateFilter(PostStates.title_state))
@@ -78,7 +80,7 @@ async def text_input(msg: Message, state: FSMContext):
     try:
         await msg.answer(await db.send_post(msg.from_user.id))
     except ValidationError as error:
-        print(error)
+        logger.error(error)
     await msg.answer("Ваше сообщение отправлено", reply_markup=admin_kb.menu_kb, parse_mode=ParseMode.HTML)
     await state.set_state(BaseAdminStates.in_admin_state)
     # await commit_changes()
@@ -114,7 +116,8 @@ async def data_input(msg: Message, state: FSMContext):
 async def nothing_in_admin(msg: Message):
     await msg.answer(text="Выберите команду", reply_markup=admin_kb.menu_kb)
 
+
 @admin_router.message()
-async def nothing_before(msg: Message, state: FSMContext):
+async def nothing_before(msg: Message):
     await msg.answer("Введите команду /start")
 # New admin state

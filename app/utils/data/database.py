@@ -15,8 +15,6 @@ class Database:
 
     # DB for user
     # Сохраняем текущее «состояние» пользователя в нашу базу
-
-
     def create_user(self, user_id: int):
         try:
             self.object.execute(f"SELECT id FROM users WHERE id  = {user_id}")
@@ -105,7 +103,6 @@ class Database:
 
         try:
             if config.USER_BOT_TOKEN is not None:
-                # operator = await user_bot.get_session()
                 operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
                 for subscriber in subscribers:
                     subscriber_id = re.findall("\d+", str(subscriber))[0]
@@ -113,7 +110,7 @@ class Database:
                     await operator.send_message(chat_id=int(subscriber_id), text='Проверка', parse_mode=ParseMode.HTML)
                 await operator.close()
             else:
-                raise Exception(text.admin_bot_token_exception)
+                raise Exception(text.user_bot_token_exception)
         except ValidationError as error:
             text.something_goes_wrong(error=error)
 

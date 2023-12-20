@@ -1,5 +1,4 @@
 import os
-# @voskhod_survey_bot
 
 from dotenv import load_dotenv
 
