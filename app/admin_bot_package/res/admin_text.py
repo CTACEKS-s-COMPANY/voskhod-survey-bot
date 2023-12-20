@@ -14,4 +14,5 @@ insert_admin_message = "Попросите пользователя зареги
 insert_post_button = "Новый пост"
 insert_post_message = "Введите текст поста"
 
-
+new_one_admin_message = "Отлично, теперь на одного админа больше"
+something_goes_wrong = "Что то пошло не так"

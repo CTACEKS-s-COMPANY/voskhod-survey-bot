@@ -3,7 +3,7 @@ import re
 import psycopg2
 from aiogram import Bot
 from aiogram.enums import ParseMode
-from pydantic import ValidationError
+from loguru import logger
 
 from app import config
 from app.utils.data import db_text as text
@@ -63,42 +63,32 @@ def does_user_admin(user_id: int):
 
 
 def set_user_to_admin(user_id: str):
-    try:
-        db_object.execute(f'UPDATE users SET is_admin = true WHERE id ={user_id};')
-        db_connection.commit()
-        return text.new_one_admin_message
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return text.something_goes_wrong(error=error)
+    db_object.execute(f'UPDATE users SET is_admin = true WHERE id ={user_id};')
+    db_connection.commit()
 
 
 # Making messages
 # ToDo make more 1 row with title
-def new_post(user_id: int, post_text: str):
-    try:
-        db_object.execute(f"INSERT INTO posts (author_id,text) VALUES ('{user_id}','{post_text}')")
-        db_connection.commit()
-        return post_text
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return text.something_goes_wrong(error=error)
+async def new_post(user_id: int, post_text: str):
+    db_object.execute(f"INSERT INTO posts (author_id,text) VALUES ('{user_id}','{post_text}')")
+    db_connection.commit()
 
 
 # TODO - шедуле
 async def send_post(user_id: int):
     # Получение всех подписчиков
     db_object.execute(f"SELECT id from users where is_subscriber=true")
-    subscribers = db_object.fetchall()
-    print(subscribers)
-    try:
-        if config.ADMIN_BOT_ID is not None:
-            operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
-            for subscriber in subscribers:
-                subscriber_id = re.findall("\d+", str(subscriber))[0]
-                print(subscriber_id)
-                await operator.send_message(subscriber_id, "Проверка")
-            await operator.close()
-        else:
-            raise Exception(text.admin_bot_token_exception)
-    except ValidationError as error:
-        text.something_goes_wrong(error=error)
+    subscribers = db_object.fetchall()[0]
+    # Получение последнего сообщения от человека с user_id
+    db_object.execute(f"SELECT text from posts where author_id={user_id} order by posts.date_creation desc ")
+    post = db_object.fetchone()[0]
+    # debug
+    logger.debug(post)
+    logger.debug(subscribers)
+    # sending messages
+    operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
+    for subscriber in subscribers:
+        subscriber_id = re.findall("\d+", str(subscriber))[0]
+        await operator.send_message(subscriber_id, post)
+    await operator.close()
+
