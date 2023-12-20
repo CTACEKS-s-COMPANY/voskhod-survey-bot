@@ -78,7 +78,7 @@ async def new_post(user_id: int, post_text: str):
 async def send_post(user_id: int):
     # Получение всех подписчиков
     db_object.execute(f"SELECT id from users where is_subscriber=true")
-    subscribers = db_object.fetchall()[0]
+    subscribers = db_object.fetchall()
     # Получение последнего сообщения от человека с user_id
     db_object.execute(f"SELECT text from posts where author_id={user_id} order by posts.date_creation desc ")
     post = db_object.fetchone()[0]
