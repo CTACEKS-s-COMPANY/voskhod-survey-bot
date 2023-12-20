@@ -1,7 +1,8 @@
 from aiogram import F, Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
-from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery
 
 from app.utils.data.database import db
 
@@ -43,3 +44,13 @@ async def greet_user(msg: Message):
         await msg.answer(text=text.you_already_subscribe_to_newsletter)
     else:
         await msg.answer(text=text.you_already_not_subscribe_to_newsletter)
+
+
+@user_router.callback_query(F.data == "yes_button")
+async def yes_button_clicked(clbck: CallbackQuery, state: FSMContext):
+    await clbck.answer(clbck.message.text)
+
+
+@user_router.callback_query(F.data == "no_button")
+async def no_button_clicked(clbck: CallbackQuery, state: FSMContext):
+    await clbck.answer(clbck.message.text)

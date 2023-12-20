@@ -89,3 +89,4 @@ def start_up():
             logger.error("Error: Connection not established {}".format(error))
     else:
         logger.error("Connection established")
+
