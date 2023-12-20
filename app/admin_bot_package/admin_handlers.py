@@ -8,11 +8,9 @@ from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from loguru import logger
-
 from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
 from app.admin_bot_package.res import admin_kb, admin_text as text
-from app.utils.data import db
-from app.utils.data.db import set_user_to_admin, new_post, send_post
+from app.utils.data.database import db
 
 admin_router = Router()
 
@@ -61,7 +59,7 @@ async def new_admin(msg: Message, state: FSMContext):
     # regex id finder
     user_id_from_message = re.findall("\d+", msg.text.lower())[0]
     try:
-        await set_user_to_admin(user_id_from_message)
+        await db.set_user_to_admin(user_id_from_message)
         await msg.answer(text.new_one_admin_message)
         await state.set_state(BaseAdminStates.in_admin_state)
     except (Exception, psycopg2.DatabaseError) as error:
@@ -89,8 +87,8 @@ async def post_admin_command(msg: Message, state: FSMContext):
 @admin_router.message(StateFilter(PostStates.text_state))
 async def text_input(msg: Message, state: FSMContext):
     try:
-        await new_post(msg.from_user.id, msg.html_text)
-        await send_post(msg.from_user.id)
+        await db.new_post(msg.from_user.id, msg.html_text)
+        await db.send_post(msg.from_user.id)
         await msg.answer("Ваше сообщение отправлено", reply_markup=admin_kb.menu_kb, parse_mode=ParseMode.HTML)
         await state.set_state(BaseAdminStates.in_admin_state)
     except (Exception, psycopg2.DatabaseError) as error:
@@ -105,24 +103,6 @@ async def data_input(msg: Message, state: FSMContext):
     await msg.answer(text=f"Дата: {datetime.now()}", parse_mode=ParseMode.HTML)
     await state.set_state(PostStates.that_right_state)
 
-
-# @admin_router.message(StateFilter(PostStates.that_right_state))
-# async def that_right_input(msg: Message, state: FSMContext):
-#     await msg.answer(text="Ваше сообщение:\n", reply_markup=admin_kb.that_right_state_kb)
-#
-#
-# @admin_router.callback_query(StateFilter(PostStates.that_right_state), F.data == "yes_button")
-# async def yes_button(callback: CallbackQuery, state: FSMContext):
-#     await callback.answer(text="Нажата кнопка Да")
-#     await state.set_state(None)
-#
-#
-# @admin_router.callback_query(StateFilter(PostStates.that_right_state), F.data == "no_button")
-# async def no_button(msg: Message, state: FSMContext):
-#     await msg.answer(text="No,button pressed")
-#     await state.set_state(PostStates.title_state)
-
-
 # Registration in bot and start commands
 
 @admin_router.message(StateFilter(BaseAdminStates.in_admin_state))
@@ -131,6 +111,5 @@ async def nothing_in_admin(msg: Message):
 
 
 @admin_router.message()
-async def nothing_before(msg: Message, state: FSMContext):
+async def nothing_before(msg: Message):
     await msg.answer("Введите команду /start")
-# New admin state
