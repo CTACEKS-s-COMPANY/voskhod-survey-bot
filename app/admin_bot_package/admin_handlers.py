@@ -102,7 +102,7 @@ async def text_input(msg: Message, state: FSMContext):
         operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
         for subscriber in subscribers:
             logger.info(subscriber[0])
-            await operator.send_message(str(subscriber[0]), post)
+            await operator.send_message(str(subscriber[0]), post, reply_markup=admin_kb.right_state_kb)
             await asyncio.sleep(5)
         await operator.close()
         await msg.answer("Ваше сообщение отправлено",
