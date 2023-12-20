@@ -1,13 +1,9 @@
-import asyncio
-import re
-
 import psycopg2
-from aiogram import Bot
-from aiogram.enums import ParseMode
 from loguru import logger
 
 from app import config
 from app.utils.data import db_text as text
+
 
 class Database:
     connection = None
@@ -69,28 +65,19 @@ class Database:
         self.object.execute(f"INSERT INTO posts (author_id,text) VALUES ('{user_id}','{post_text}')")
         self.connection.commit()
 
-    # TODO - шедуле
-    async def send_post(self, user_id: int):
-        logger.info(f"Sending post from {user_id}")
-        # Получение всех подписчиков
+    async def get_post(self, user_id: int):
+        self.object.execute(f"SELECT text from posts where author_id={user_id} order by posts.date_creation desc ")
+        return self.object.fetchone()[0]
+
+    async def get_subscribers(self):
         self.object.execute(f"SELECT id from users where is_subscriber=true")
         subscribers = self.object.fetchall()
         logger.info(f"All subscribers: {subscribers}")
-        # Получение последнего сообщения от человека с user_id
-        self.object.execute(f"SELECT text from posts where author_id={user_id} order by posts.date_creation desc ")
-        post = self.object.fetchone()[0]
-        # debug
-        logger.info(f"Sending post is: {post}")
-        logger.info(f"All subscribers: {subscribers}")
-        # sending messages
-        operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
-        for subscriber in subscribers:
-            logger.info(subscriber[0])
-            await operator.send_message(str(subscriber[0]), post)
-            await asyncio.sleep(5)
-        await operator.close()
+        return subscribers
+
 
 db = Database()
+
 
 def start_up():
     if db.connection is None:

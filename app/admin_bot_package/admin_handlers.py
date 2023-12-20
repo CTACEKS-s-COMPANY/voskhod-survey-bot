@@ -1,13 +1,16 @@
+import asyncio
 import re
 from datetime import datetime
 
 import psycopg2
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.enums import ParseMode
 from aiogram.filters import StateFilter, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from loguru import logger
+
+from app import config
 from app.admin_bot_package.admin_states import PostStates, BaseAdminStates
 from app.admin_bot_package.res import admin_kb, admin_text as text
 from app.utils.data.database import db
@@ -87,9 +90,25 @@ async def post_admin_command(msg: Message, state: FSMContext):
 @admin_router.message(StateFilter(PostStates.text_state))
 async def text_input(msg: Message, state: FSMContext):
     try:
-        await db.new_post(msg.from_user.id, msg.html_text)
-        await db.send_post(msg.from_user.id)
-        await msg.answer("Ваше сообщение отправлено", reply_markup=admin_kb.menu_kb, parse_mode=ParseMode.HTML)
+        # getting messages
+        logger.info("Getting message")
+        await db.new_post(msg.from_user.id,msg.html_text)
+        post = await db.get_post(msg.from_user.id)
+        subscribers = await db.get_subscribers()
+        logger.info(f"Sending post from {msg.from_user.id}")
+        logger.info(f"Sending post is: {post}")
+        logger.info(f"All subscribers: {subscribers}")
+        # sending messages
+        operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
+        for subscriber in subscribers:
+            logger.info(subscriber[0])
+            await operator.send_message(str(subscriber[0]), post)
+            await asyncio.sleep(5)
+        await operator.close()
+        await msg.answer("Ваше сообщение отправлено",
+                         reply_markup=admin_kb.menu_kb,
+                         parse_mode=ParseMode.HTML)
+        # changing state
         await state.set_state(BaseAdminStates.in_admin_state)
     except (Exception, psycopg2.DatabaseError) as error:
         logger.error(error)
