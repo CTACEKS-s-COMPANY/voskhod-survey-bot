@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 import psycopg2
@@ -88,7 +89,8 @@ async def send_post(user_id: int):
     # sending messages
     operator = Bot(config.USER_BOT_TOKEN, parse_mode=ParseMode.HTML)
     for subscriber in subscribers:
-        subscriber_id = re.findall("\d+", str(subscriber))[0]
-        await operator.send_message(subscriber_id, post)
+        logger.debug(subscriber[0])
+        await operator.send_message(str(subscriber[0]), post)
+        await asyncio.sleep(5)
     await operator.close()
 
