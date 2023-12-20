@@ -13,7 +13,7 @@ back_menu_kb = ReplyKeyboardMarkup(keyboard=[
 right_state_kb = InlineKeyboardMarkup(inline_keyboard=[[
     InlineKeyboardButton(text="Да", callback_data="yes_button"),
     InlineKeyboardButton(text="Нет", callback_data="no_button")
-]], one_time_keyboard=True, resize_keyboard=True)
+]], one_time_keyboard=True, resize_keyboard=True, selective=True)
 
 you_are_not_admin_kb = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Попробовать еще раз")]

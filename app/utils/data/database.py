@@ -66,8 +66,8 @@ class Database:
         self.connection.commit()
 
     async def get_post(self, user_id: int):
-        self.object.execute(f"SELECT text from posts where author_id={user_id} order by posts.date_creation desc ")
-        return self.object.fetchone()[0]
+        self.object.execute(f"SELECT id,text from posts where author_id={user_id} order by posts.date_creation desc ")
+        return self.object.fetchone()
 
     async def get_subscribers(self):
         self.object.execute(f"SELECT id from users where is_subscriber=true")
