@@ -147,7 +147,7 @@ async def text_input(msg: Message, state: FSMContext):
     try:
         # getting messages
         logger.info("Getting message")
-        await db.new_post(msg.from_user.id,msg.html_text)
+        await db.new_post(msg.from_user.id, msg.html_text)
         post = await db.get_post(msg.from_user.id)
         subscribers = await db.get_subscribers()
         logger.info(f"Sending post from {msg.from_user.id}")
@@ -158,7 +158,7 @@ async def text_input(msg: Message, state: FSMContext):
         for subscriber in subscribers:
             logger.info(subscriber[0])
             await operator.send_message(
-                str(subscriber[0]), post, reply_markup=admin_kb.right_state_kb)
+                str(subscriber[0]), f"Post № {post[0]}\n\n{post[1]}", reply_markup=admin_kb.right_state_kb)
             await asyncio.sleep(5)
         await operator.close()
         await msg.answer("Ваше сообщение отправлено",
@@ -171,15 +171,14 @@ async def text_input(msg: Message, state: FSMContext):
         await msg.answer(text.something_goes_wrong)
         await state.set_state(BaseAdminStates.in_admin_state)
 
-
 #  Input date
 @admin_router.message(StateFilter(PostStates.date_state))
 async def data_input(msg: Message, state: FSMContext):
     await msg.answer(text=f"Дата: {datetime.now()}", parse_mode=ParseMode.HTML)
     await state.set_state(PostStates.that_right_state)
 
-# Registration in bot and start commands
 
+# Registration in bot and start commands
 @admin_router.message(StateFilter(BaseAdminStates.in_admin_state))
 async def nothing_in_admin(msg: Message):
     await msg.answer(text="Выберите команду", reply_markup=admin_kb.menu_kb)
