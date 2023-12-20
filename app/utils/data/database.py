@@ -75,6 +75,14 @@ class Database:
         logger.info(f"All subscribers: {subscribers}")
         return subscribers
 
+    async def create_answer(self, user_id: int, post_id, answer: bool):
+        self.object.execute(f"SELECT (id) FROM answers WHERE (id  = {user_id} and post_id = {post_id})")
+        result = self.object.fetchone()[0]
+        if result is None:
+            logger.info(f"Creating from {user_id} with post {post_id} = answer {answer}")
+            self.object.execute(f"INSERT INTO answers (user_id, \"isAnsw\",post_id, description) VALUES ('{user_id}','{answer}',{post_id},'some description')")
+            self.connection.commit()
+
 
 db = Database()
 
@@ -89,4 +97,3 @@ def start_up():
             logger.error("Error: Connection not established {}".format(error))
     else:
         logger.error("Connection established")
-

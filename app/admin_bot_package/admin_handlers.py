@@ -116,7 +116,6 @@ async def text_input(msg: Message, state: FSMContext):
         await msg.answer(text.something_goes_wrong)
         await state.set_state(BaseAdminStates.in_admin_state)
 
-
 #  Input date
 @admin_router.message(StateFilter(PostStates.date_state))
 async def data_input(msg: Message, state: FSMContext):

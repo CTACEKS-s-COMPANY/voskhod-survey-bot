@@ -1,8 +1,12 @@
+import re
+
+import psycopg2
 from aiogram import F, Router
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
+from loguru import logger
 
 from app.utils.data.database import db
 
@@ -49,8 +53,19 @@ async def greet_user(msg: Message):
 @user_router.callback_query(F.data == "yes_button")
 async def yes_button_clicked(clbck: CallbackQuery, state: FSMContext):
     await clbck.answer(clbck.message.text)
+    post_id_from_message = re.findall("\d+", clbck.message.text)[0]
+    try:
+        await db.create_answer(clbck.from_user.id, post_id_from_message, True)
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(error)
 
 
 @user_router.callback_query(F.data == "no_button")
 async def no_button_clicked(clbck: CallbackQuery, state: FSMContext):
     await clbck.answer(clbck.message.text)
+    post_id_from_message = re.findall("\d+", clbck.message.text)[0]
+    try:
+        await db.create_answer(clbck.from_user.id, post_id_from_message,False)
+    except (Exception, psycopg2.DatabaseError) as error:
+        logger.error(error)
+
